@@ -1,1 +1,37 @@
 @import "tailwindcss";
+
+@theme {
+  --font-display: var(--font-dm-serif), "serif";
+  --font-sans: var(--font-inter), 'sans-serif';
+  --font-ui: var(--font-poppins);
+  --color-cream: #FAF8F5;
+  --color-warm-gray: #E4E0DC;
+  --color-taupe: #A8988D;
+  --color-fawn: #D9A86C;
+  --color-ink: #1C1C1C;
+  --box-shadow-soft: 0 6px 24px rgba(0,0,0,0.06);
+  --ease-fluid: cubic-bezier(0.3, 0, 0, 1);
+  --ease-snappy: cubic-bezier(0.2, 0, 0, 1);
+  /* ... */
+}
+
+:root {
+--radius: 14px;
+}
+
+
+html, body {
+background: var(--color-cream);
+color: var(--color-ink);
+font-family: var(--font-sans), ui-sans-serif, system-ui;
+}
+
+
+/* Focus styles for a11y */
+:where(a, button, [role='button'], input, select, textarea):focus-visible {
+outline: 2px solid var(--color-fawn);
+outline-offset: 3px;
+}
+
+
+.prose img { border-radius: 12px; }

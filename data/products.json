@@ -1,0 +1,41 @@
+[
+{
+"id": "tee-first-date",
+"slug": "first-date-tee",
+"title": "First Date Tee (Mock)",
+"price": 3200,
+"images": ["/images/first-date-1.jpg", "/images/first-date-2.jpg"],
+"options": [
+{ "name": "Size", "values": ["S","M","L","XL"] },
+{ "name": "Color", "values": ["Cream","Black"] }
+],
+"variants": [
+{ "sku": "FDT-S-CREAM", "options": { "Size": "S", "Color": "Cream" } }
+],
+"tags": ["apparel","pug","limited"],
+"summary": "Our debut design. Soft-hand cotton with an editorial print.",
+"descriptionMdxPath": "/src/content/products/first-date.mdx"
+},
+{
+"id": "print-enso-pug",
+"slug": "enso-pug-print",
+"title": "Enso Pug Print (Mock)",
+"price": 2400,
+"images": ["/images/enso-1.jpg"],
+"options": [ { "name": "Size", "values": ["8x10","12x16","18x24"] } ],
+"tags": ["art","minimal"],
+"summary": "Minimal ink print on textured stock.",
+"descriptionMdxPath": "/src/content/products/enso-pug.mdx"
+},
+{
+"id": "freshener-hang",
+"slug": "glass-car-freshener",
+"title": "Glass Car Freshener (Mock)",
+"price": 1800,
+"images": ["/images/fresh-1.jpg", "/images/fresh-2.jpg", "/images/fresh-3.jpg"],
+"options": [ { "name": "Scent", "values": ["Cedar","Citrus","Unscented"] } ],
+"tags": ["accessories","gift"],
+"summary": "Adjustable rope, wood cap. Remove plastic stopper before use.",
+"descriptionMdxPath": "/src/content/products/freshener.mdx"
+}
+]
