@@ -44,14 +44,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     return (
         <html lang="en" className={`${dmSerif.variable} ${inter.variable} ${poppins.variable}`}>
             <head>
-                {env.useSnipcart && (
                     <Script id="snipcart-settings" strategy="beforeInteractive">
                         {`window.SnipcartSettings = {
               publicApiKey: "${env.snipcartPublicKey}",
               loadStrategy: "always"
             };`}
                     </Script>
-                )}
             </head>
             <body className="min-h-screen flex flex-col">
                 <CartProvider>
