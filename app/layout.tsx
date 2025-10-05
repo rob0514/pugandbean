@@ -48,7 +48,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     <Script id="snipcart-settings" strategy="beforeInteractive">
                         {`window.SnipcartSettings = {
               publicApiKey: "${env.snipcartPublicKey}",
-              loadStrategy: "on-user-interaction"
+              loadStrategy: "always"
             };`}
                     </Script>
                 )}
