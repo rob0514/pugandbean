@@ -6,10 +6,6 @@ import { initSnipcartEvents } from "@/lib/payments/snipcart";
 export default function SnipcartProvider() {
   return (
     <>
-      <link
-        rel="stylesheet"
-        href="https://cdn.snipcart.com/themes/v3.6.1/default/snipcart.css"
-      />
       <Script
         id="snipcart-runtime"
         src="https://cdn.snipcart.com/themes/v3.6.1/default/snipcart.js"
