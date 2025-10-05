@@ -9,7 +9,6 @@ import { env } from '@/lib/env'
 //import SnipcartProvider from '@/components/payments/SnipcartProvider'
 import SnipcartRootGuard from "@/components/payments/SnipcartRootGuard"
 import SnipcartEventsMount from "@/components/payments/SnipcartEventsMount"
-import 'https://cdn.snipcart.com/themes/v3.6.1/default/snipcart.css'
 
 const dmSerif = DM_Serif_Display({ subsets: ['latin'], weight: '400', variable: '--font-dm-serif' })
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
@@ -55,7 +54,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             };`}
           </Script>
         )}
-      
+          <link
+            rel="stylesheet"
+            href="https://cdn.snipcart.com/themes/v3.6.1/default/snipcart.css"
+          />
             </head>
             <body className="min-h-screen flex flex-col">
                 <CartProvider>

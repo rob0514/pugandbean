@@ -42,11 +42,11 @@ outline-offset: 3px;
 /* Snipcart: keep side cart to a panel on >=768px */
 @media (min-width: 768px) {
   /* Make sure the drawer hugs the right edge instead of stretching full width */
-  .snipcart-cart--side .snipcart-cart__container {
+  .snipcart-modal__container, .snipcart-cart--side .snipcart-cart__container {
     justify-content: flex-end !important;
   }
   /* Set a sane panel width */
-  .snipcart-cart--side .snipcart-cart__content {
+  .snipcart-modal__container, .snipcart-cart--side .snipcart-cart__content {
     width: 420px !important;          /* tweak: 360–520px */
     max-width: 90vw !important;       /* guard on smaller laptops */
     border-radius: 12px 0 0 12px;     /* optional polish */
