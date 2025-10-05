@@ -6,7 +6,7 @@ import { SiteHeader } from '@/components/site-header'
 import { SiteFooter } from '@/components/site-footer'
 import { CartProvider } from '@/lib/cart'
 import { env } from '@/lib/env'
-import SnipcartProvider from '@/components/payments/SnipcartProvider'
+//import SnipcartProvider from '@/components/payments/SnipcartProvider'
 
 const dmSerif = DM_Serif_Display({ subsets: ['latin'], weight: '400', variable: '--font-dm-serif' })
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
@@ -56,7 +56,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     <SiteHeader />
                     <main className="flex-1">
                         {children}
-                        {env.useSnipcart && <SnipcartProvider />}
+                        <Script
+          id="snipcart-runtime"
+          src="https://cdn.snipcart.com/themes/v3.6.1/default/snipcart.js"
+          strategy="afterInteractive"
+          onLoad={() => {
+            console.log("[snipcart] runtime loaded", !!window.Snipcart);
+            document.addEventListener("snipcart.ready", () =>
+              console.log("[snipcart] ready event fired")
+            );
+          }}
+          onError={(e) => console.error("[snipcart] runtime load error", e)}
+        />
                     </main>
                     <SiteFooter />
                 </CartProvider>
