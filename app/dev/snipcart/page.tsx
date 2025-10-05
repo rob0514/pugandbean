@@ -14,7 +14,7 @@ export default function SnipcartDev() {
         data-item-name="Test Tee"
         data-item-price="19.99"
         data-item-url={`${base}/dev/snipcart`}
-        data-item-image="/test.jpg"
+        data-item-image="/test.png"
       >
         Add Test Product
       </button>

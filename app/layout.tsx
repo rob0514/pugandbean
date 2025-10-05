@@ -6,7 +6,8 @@ import { SiteHeader } from '@/components/site-header'
 import { SiteFooter } from '@/components/site-footer'
 import { CartProvider } from '@/lib/cart'
 import { env } from '@/lib/env'
-import SnipcartProvider from '@/components/payments/SnipcartProvider'
+//import SnipcartProvider from '@/components/payments/SnipcartProvider'
+import SnipcartEventsMount from "@/components/payments/SnipcartEventsMount";
 
 const dmSerif = DM_Serif_Display({ subsets: ['latin'], weight: '400', variable: '--font-dm-serif' })
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
@@ -52,19 +53,30 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             };`}
           </Script>
         )}
-        {env.useSnipcart && (
           <link
             rel="stylesheet"
             href="https://cdn.snipcart.com/themes/v3.6.1/default/snipcart.css"
           />
-        )}
             </head>
             <body className="min-h-screen flex flex-col">
                 <CartProvider>
                     <SiteHeader />
                     <main className="flex-1">
                         {children}
-                          {env.useSnipcart && <SnipcartProvider />} {/* client side */}
+                         {env.useSnipcart && (
+          <>
+            {/* Runtime — no event handlers here (server layout) */}
+            <Script
+              id="snipcart-runtime"
+              src="https://cdn.snipcart.com/themes/v3.6.1/default/snipcart.js"
+              strategy="afterInteractive"
+            />
+            {/* The ONE root Snipcart node that must never unmount */}
+            <div id="snipcart" hidden data-config-modal-style="side" suppressHydrationWarning />
+            {/* Client hook that wires events; safe across navigations */}
+            <SnipcartEventsMount />
+          </>
+        )}
                     </main>
                     <SiteFooter />
                 </CartProvider>
