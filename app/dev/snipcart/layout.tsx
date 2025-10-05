@@ -3,7 +3,7 @@
 import Script from "next/script";
 
 export default function DevSnipcartLayout({ children }: { children: React.ReactNode }) {
-  const key = process.env.NEXT_PUBLIC_SNIPCART_PUBLIC_API_KEY ?? "";
+  const key = process.env.SNIPCART_PUBLIC_API_KEY ?? "";
   return (
     <html lang="en">
       <head>
