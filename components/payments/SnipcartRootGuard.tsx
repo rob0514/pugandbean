@@ -9,7 +9,7 @@ export default function SnipcartRootGuard() {
         root = document.createElement("div");
         root.id = "snipcart";
         root.setAttribute("hidden", "");
-        root.setAttribute("data-config-modal-style", "modal");
+        //root.setAttribute("data-config-modal-style", "modal");
         document.body.appendChild(root);
       } else if (root.parentNode !== document.body) {
         document.body.appendChild(root);
