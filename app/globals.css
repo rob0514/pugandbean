@@ -35,3 +35,6 @@ outline-offset: 3px;
 
 
 .prose img { border-radius: 12px; }
+
+.snipcart-modal__container { border-radius: 1rem; }
+.snipcart-button-primary { border-radius: 9999px; }
