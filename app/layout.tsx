@@ -7,7 +7,8 @@ import { SiteFooter } from '@/components/site-footer'
 import { CartProvider } from '@/lib/cart'
 import { env } from '@/lib/env'
 //import SnipcartProvider from '@/components/payments/SnipcartProvider'
-import SnipcartEventsMount from "@/components/payments/SnipcartEventsMount";
+import SnipcartRootGuard from "@/components/payments/SnipcartRootGuard"
+import SnipcartEventsMount from "@/components/payments/SnipcartEventsMount"
 
 const dmSerif = DM_Serif_Display({ subsets: ['latin'], weight: '400', variable: '--font-dm-serif' })
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
@@ -72,8 +73,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               strategy="afterInteractive"
             />
             {/* The ONE root Snipcart node that must never unmount */}
-            <div id="snipcart" hidden data-config-modal-style="side" suppressHydrationWarning />
+           {/* <div id="snipcart" hidden data-config-modal-style="side" suppressHydrationWarning /> */}
             {/* Client hook that wires events; safe across navigations */}
+            <SnipcartRootGuard />
             <SnipcartEventsMount />
           </>
         )}
