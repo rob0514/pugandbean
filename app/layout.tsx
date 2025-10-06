@@ -7,8 +7,8 @@ import { SiteFooter } from '@/components/site-footer'
 import { CartProvider } from '@/lib/cart'
 import { env } from '@/lib/env'
 //import SnipcartProvider from '@/components/payments/SnipcartProvider'
-import SnipcartRootGuard from "@/components/payments/SnipcartRootGuard"
-import SnipcartEventsMount from "@/components/payments/SnipcartEventsMount"
+//import SnipcartRootGuard from "@/components/payments/SnipcartRootGuard"
+//import SnipcartEventsMount from "@/components/payments/SnipcartEventsMount"
 
 const dmSerif = DM_Serif_Display({ subsets: ['latin'], weight: '400', variable: '--font-dm-serif' })
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
@@ -46,12 +46,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     return (
         <html lang="en" className={`${dmSerif.variable} ${inter.variable} ${poppins.variable}`}>
             <head>
-                    {env.useSnipcart && (
+                  {env.useSnipcart && (
           <Script id="snipcart-settings" strategy="beforeInteractive">
             {`window.SnipcartSettings = {
               publicApiKey: "${env.snipcartPublicKey}",
-              loadStrategy: "always",
-              modalStyle: "modal"     // <-- force centered modal at boot
+              loadStrategy: "always"
+              // no modalStyle here; we will keep full-page or set side later
             };`}
           </Script>
         )}
@@ -65,28 +65,28 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     <SiteHeader />
                     <main className="flex-1">
                         {children}
-                         {env.useSnipcart && (
+                    {env.useSnipcart && (
           <>
-            {/* Runtime — no event handlers here (server layout) */}
+            {/* 1) Create #snipcart OUTSIDE React, before loading the runtime */}
+            <Script id="snipcart-root-create" strategy="afterInteractive">
+              {`
+              (function () {
+                if (!document.getElementById('snipcart')) {
+                  var r = document.createElement('div');
+                  r.id = 'snipcart';
+                  r.hidden = true;
+                  document.body.appendChild(r);
+                }
+              })();
+              `}
+            </Script>
+
+            {/* 2) Now load the Snipcart runtime */}
             <Script
               id="snipcart-runtime"
               src="https://cdn.snipcart.com/themes/v3.6.1/default/snipcart.js"
               strategy="afterInteractive"
             />
-            {/* The ONE root Snipcart node that must never unmount */}
-           {/* <div id="snipcart" hidden data-config-modal-style="side" suppressHydrationWarning /> */}
-            {/* Client hook that wires events; safe across navigations */}
-            {/* Snipcart runtime */}
-
-{/* Root node present BEFORE/WHILE the runtime boots */}
-<div
-  id="snipcart"
-  hidden
-  data-config-modal-style="modal"  // <-- also declare here
-  suppressHydrationWarning         // avoids any hydration noise
-/>
-            <SnipcartRootGuard />
-            <SnipcartEventsMount />
           </>
         )}
                     </main>
