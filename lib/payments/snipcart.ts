@@ -66,7 +66,7 @@ export function initSnipcartEvents() {
         });
       };
 
-      log("checkout_success", { token: order?.token, total: order?.grandTotal });
+      console.log("checkout_success", { token: order?.token, total: order?.grandTotal });
 
       try {
         const items = toItems(order?.items);
