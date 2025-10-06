@@ -1,32 +1,28 @@
+// components/payments/SnipcartPanelSizer.tsx
 "use client";
-
 import { useEffect } from "react";
 
-export default function SnipcartPanelSizer({
-  width = 420, // px, tweak to taste
-  minBreakpoint = 768, // only constrain on desktop
-}: { width?: number; minBreakpoint?: number }) {
-
+export default function SnipcartPanelSizer({ width = 420, minBreakpoint = 768 }:{
+  width?: number; minBreakpoint?: number;
+}) {
   useEffect(() => {
     const apply = () => {
       if (window.innerWidth < minBreakpoint) return;
+      const root = document.getElementById("snipcart");
+      if (!root) return;
 
-      // Container: ensure it hugs the right edge
-      const container =
-        document.querySelector<HTMLElement>(
-          "#snipcart .snipcart-cart--side .snipcart-modal__container, " +
-          "#snipcart .snipcart-cart--side .snipcart-cart__container, " +
-          "#snipcart .snipcart-cart--side [class*='modal__container'], " +
-          "#snipcart .snipcart-cart--side [class*='cart__container']"
-        );
-
-      const content =
-        document.querySelector<HTMLElement>(
-          "#snipcart .snipcart-cart--side .snipcart-modal__content, " +
-          "#snipcart .snipcart-cart--side .snipcart-cart__content, " +
-          "#snipcart .snipcart-cart--side [class*='modal__content'], " +
-          "#snipcart .snipcart-cart--side [class*='cart__content']"
-        );
+      const container = root.querySelector<HTMLElement>(
+        ".snipcart-cart--side .snipcart-modal__container, " +
+        ".snipcart-cart--side .snipcart-cart__container, " +
+        ".snipcart-cart--side [class*='modal__container'], " +
+        ".snipcart-cart--side [class*='cart__container']"
+      );
+      const content = root.querySelector<HTMLElement>(
+        ".snipcart-cart--side .snipcart-modal__content, " +
+        ".snipcart-cart--side .snipcart-cart__content, " +
+        ".snipcart-cart--side [class*='modal__content'], " +
+        ".snipcart-cart--side [class*='cart__content']"
+      );
 
       if (container) {
         container.style.display = "flex";
@@ -39,23 +35,13 @@ export default function SnipcartPanelSizer({
       }
     };
 
-    // run now, when Snipcart signals ready, and whenever DOM under #snipcart changes
-    apply();
     const onReady = () => apply();
     document.addEventListener("snipcart.ready", onReady as EventListener);
-
-    const root = document.getElementById("snipcart");
-    const mo = root ? new MutationObserver(apply) : null;
-    if (root && mo) mo.observe(root, { subtree: true, childList: true });
-
-    // also re-apply on resize so it behaves around the breakpoint
-    const onResize = () => apply();
-    window.addEventListener("resize", onResize);
+    window.addEventListener("resize", apply);
 
     return () => {
       document.removeEventListener("snipcart.ready", onReady as EventListener);
-      window.removeEventListener("resize", onResize);
-      mo?.disconnect();
+      window.removeEventListener("resize", apply);
     };
   }, [width, minBreakpoint]);
 

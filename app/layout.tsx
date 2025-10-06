@@ -7,7 +7,7 @@ import { SiteFooter } from '@/components/site-footer'
 import { CartProvider } from '@/lib/cart'
 import { env } from '@/lib/env'
 //import SnipcartProvider from '@/components/payments/SnipcartProvider'
-import SnipcartRootGuard from "@/components/payments/SnipcartRootGuard"
+//import SnipcartRootGuard from "@/components/payments/SnipcartRootGuard"
 import SnipcartEventsMount from "@/components/payments/SnipcartEventsMount"
 import SnipcartPanelSizer from '@/components/payments/SnipcartPanelSizer'
 
@@ -48,6 +48,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <html lang="en" className={`${dmSerif.variable} ${inter.variable} ${poppins.variable}`}>
             <head>
                     {env.useSnipcart && (
+        
           <Script id="snipcart-settings" strategy="beforeInteractive">
             {`window.SnipcartSettings = {
               publicApiKey: "${env.snipcartPublicKey}",
@@ -86,7 +87,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   data-config-modal-style="side"  // <-- also declare here
   suppressHydrationWarning         // avoids any hydration noise
 />
-            <SnipcartRootGuard />
+            {/*<SnipcartRootGuard />*/}
             <SnipcartEventsMount />
             <SnipcartPanelSizer width={420} />
           </>
