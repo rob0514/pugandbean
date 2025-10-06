@@ -14,6 +14,7 @@ return (
 <Link href="/shop">Shop</Link>
 <Link href="/about">About</Link>
 <Link href="/contact">Contact</Link>
+<Link href="/dev/snipcart">Snipcart</Link>
 </nav>
 <button aria-label="Open cart" onClick={open} className="rounded-xl px-3 py-2 bg-fawn font-ui text-sm">Cart</button>
 </div>
