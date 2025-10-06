@@ -38,28 +38,3 @@ outline-offset: 3px;
 
 .snipcart-modal__container { border-radius: 1rem; }
 .snipcart-button-primary { border-radius: 9999px; }
-
-/* Snipcart: keep side cart to a panel on >=768px */
-@media (min-width: 768px) {
-  /* Make sure the drawer hugs the right edge instead of stretching full width */
-  .snipcart-cart--side .snipcart-cart__container {
-    justify-content: flex-end !important;
-  }
-  /* Set a sane panel width */
-  .snipcart-cart--side .snipcart-cart__content {
-    width: 420px !important;          /* tweak: 360–520px */
-    max-width: 90vw !important;       /* guard on smaller laptops */
-    border-radius: 12px 0 0 12px;     /* optional polish */
-  }
-}
-/* Always show the close button */
-.snipcart-modal__close {
-  display: block !important;
-  opacity: 1 !important;
-}
-
-/* Make the backdrop show it's clickable (it already closes on click/ESC) */
-.snipcart-modal__overlay,
-.snipcart-overlay {
-  cursor: pointer;
-}
