@@ -1,5 +1,5 @@
 let initialized = false;
-
+let hasRedirected = false;
 function whenSnipcartReady(cb: () => void) {
   if (typeof window === "undefined") return;
   const w = window as unknown as { Snipcart?: { events?: unknown; store?: unknown } };
@@ -66,7 +66,7 @@ export function initSnipcartEvents() {
         });
       };
 
-      console.log("checkout_success", { token: order?.token, total: order?.grandTotal });
+      log("checkout_success", { token: order?.token, total: order?.grandTotal });
 
       try {
         const items = toItems(order?.items);
@@ -83,8 +83,10 @@ export function initSnipcartEvents() {
         );
       } catch {}
       setTimeout(() => {
-    window.location.assign("/checkout/success");
-  }, 0);
+  if (hasRedirected) return;
+  hasRedirected = true;
+  window.location.assign("/checkout/success");
+}, 0);
     });
 
     // Header badge sync
