@@ -1,5 +1,14 @@
 let initialized = false;
 let hasRedirected = false;
+
+function scheduleSuccessRedirect(delay = 200) {
+  if (hasRedirected) return;
+  hasRedirected = true;
+  setTimeout(() => {
+    window.location.assign("/checkout/success");
+  }, delay);
+}
+
 function whenSnipcartReady(cb: () => void) {
   if (typeof window === "undefined") return;
   const w = window as unknown as { Snipcart?: { events?: unknown; store?: unknown } };
@@ -27,6 +36,23 @@ export function initSnipcartEvents() {
   whenSnipcartReady(() => {
     // At this point Snipcart is fully booted
     const { events, store } = window.Snipcart!;
+
+    const maybeRedirectFromHash = () => {
+  if (typeof window === "undefined") return;
+  // e.g., "#/snipcart/order/8d211191-..."
+  if (window.location.hash.includes("/order/")) {
+    // if our order snapshot is already in sessionStorage, hop now
+    try {
+      const hasOrder = !!sessionStorage.getItem("snipcart:lastOrder");
+      if (hasOrder) scheduleSuccessRedirect(100);
+    } catch {
+      scheduleSuccessRedirect(150);
+    }
+  }
+};
+// run once on boot + on future hash changes
+maybeRedirectFromHash();
+window.addEventListener("hashchange", maybeRedirectFromHash);
 
     const log = (event: string, payload?: unknown) =>
       console.log(`[analytics] ${event}`, payload);
@@ -82,11 +108,7 @@ export function initSnipcartEvents() {
           })
         );
       } catch {}
-      setTimeout(() => {
-  if (hasRedirected) return;
-  hasRedirected = true;
-  window.location.assign("/checkout/success");
-}, 0);
+      scheduleSuccessRedirect(150);
     });
 
     // Header badge sync
