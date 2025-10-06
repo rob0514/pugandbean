@@ -81,8 +81,10 @@ export function initSnipcartEvents() {
             placedAt: order?.creationDate,
           })
         );
-        window.location.href = "/checkout/success";
       } catch {}
+      setTimeout(() => {
+    window.location.assign("/checkout/success");
+  }, 0);
     });
 
     // Header badge sync
