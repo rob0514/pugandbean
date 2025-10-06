@@ -9,7 +9,7 @@ import { env } from '@/lib/env'
 //import SnipcartProvider from '@/components/payments/SnipcartProvider'
 //import SnipcartRootGuard from "@/components/payments/SnipcartRootGuard"
 import SnipcartEventsMount from "@/components/payments/SnipcartEventsMount"
-import SnipcartPanelSizer from '@/components/payments/SnipcartPanelSizer'
+//import SnipcartPanelSizer from '@/components/payments/SnipcartPanelSizer'
 
 const dmSerif = DM_Serif_Display({ subsets: ['latin'], weight: '400', variable: '--font-dm-serif' })
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
@@ -53,7 +53,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {`window.SnipcartSettings = {
               publicApiKey: "${env.snipcartPublicKey}",
               loadStrategy: "always",
-              modalStyle: "side"     // <-- force centered modal at boot
             };`}
           </Script>
         )}
@@ -83,13 +82,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 {/* Root node present BEFORE/WHILE the runtime boots */}
 <div
   id="snipcart"
-  hidden
-  data-config-modal-style="side"  // <-- also declare here
+  hidden  // <-- also declare here
   suppressHydrationWarning         // avoids any hydration noise
 />
             {/*<SnipcartRootGuard />*/}
             <SnipcartEventsMount />
-            <SnipcartPanelSizer width={420} />
           </>
         )}
                     </main>
