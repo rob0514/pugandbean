@@ -21,6 +21,12 @@ const nextConfig: NextConfig = {
             },
         ];
     },
+     images: {
+    remotePatterns: [
+      { protocol: 'https', hostname: 'files.cdn.printful.com' },
+      { protocol: 'https', hostname: 'images.printful.com' },
+    ],
+  },
     reactStrictMode: true,
     typedRoutes: true,
     experimental: { mdxRs: true },
