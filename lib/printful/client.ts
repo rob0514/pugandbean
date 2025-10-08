@@ -1,76 +1,81 @@
-// server-only
+// src/lib/printful/client.ts
 import 'server-only';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-type PrintfulCatalog = {
-  products: Array<{
-    id: number;
-    name: string;
-    variants: number;
-    // Not all fields included; we fetch product + variants/details separately
-  }>;
-};
-
-type PrintfulProduct = {
+// -----------------------------
+// Public types (used by map.ts)
+// -----------------------------
+export type PrintfulVariant = {
   id: number;
   name: string;
-  variants: Array<{
-    id: number;
-    name: string;
-    sku?: string;
-    retail_price?: string; // stringified decimal from Printful
-    currency?: string;
-    files?: Array<{ type: string; url: string }>;
-    color?: string;
-    size?: string;
-    image?: string;        // sometimes present
-  }>;
-  // fallback gallery
-  files?: Array<{ type: string; url: string }>;
-  thumbnail_url?: string;
-  // ... other fields
+  sku?: string;
+  retail_price?: string;
+  currency?: string;
+  color?: string;
+  size?: string;
+  image?: string;
 };
 
+export type PrintfulProduct = {
+  id: number;
+  name: string;
+  variants: PrintfulVariant[];
+  files?: Array<{ type?: string; url: string }>;
+  thumbnail_url?: string;
+};
+
+// cache payload
+type PrintfulCache = {
+  fetchedAt: string;
+  ttl: number;
+  products: PrintfulProduct[];
+};
+
+// ---------------------------------
+// Config / helpers (no `any` casts)
+// ---------------------------------
 const PRINTFUL_API = 'https://api.printful.com';
 
-function getApiKey() {
-  const key = process.env.PRINTFUL_API_KEY;
+function getApiKey(): string {
+  const key = process.env.PRINTFUL_API_KEY?.trim();
   if (!key) throw new Error('PRINTFUL_API_KEY missing');
   return key;
 }
 
-function getCachePath() {
-  // Writable both locally and on Vercel at build time
-  const p = path.join(process.cwd(), 'src', 'data', 'printful-cache.json');
-  return p;
+function isTrue(v: string | undefined) {
+  return typeof v === 'string' && /^(1|true|yes|on)$/i.test(v.trim());
 }
 
-async function readCache<T>(): Promise<T | null> {
-  try {
-    const buf = await fs.readFile(getCachePath(), 'utf8');
-    return JSON.parse(buf) as T;
-  } catch {
-    return null;
+function normalizeHeaders(h?: HeadersInit): Record<string, string> {
+  if (!h) return {};
+  if (Array.isArray(h)) return Object.fromEntries(h as Array<[string, string]>);
+  if (typeof Headers !== 'undefined' && h instanceof Headers) {
+    const out: Record<string, string> = {};
+    h.forEach((v, k) => { out[k] = v; });
+    return out;
   }
+  return h as Record<string, string>;
 }
 
-async function writeCache<T>(data: T) {
-  const p = getCachePath();
-  const dir = path.dirname(p);
-  await fs.mkdir(dir, { recursive: true });
-  await fs.writeFile(p, JSON.stringify(data, null, 2), 'utf8');
-}
+async function pfFetch<T>(endpoint: string, init: RequestInit = {}, attempt = 0): Promise<T> {
+  const storeId = (process.env.PRINTFUL_STORE_ID || '').trim();
 
-async function pfFetch<T>(endpoint: string, init?: RequestInit, attempt = 0): Promise<T> {
+  // base headers (store header ONLY for /store/* endpoints)
+  const baseHeaders: Record<string, string> = {
+    Authorization: `Bearer ${getApiKey()}`,
+    'Content-Type': 'application/json',
+    ...(endpoint.startsWith('/store/') && storeId ? { 'X-PF-Store-ID': storeId } : {}),
+  };
+
+  const headers: Record<string, string> = {
+    ...normalizeHeaders(init.headers),
+    ...baseHeaders, // base wins
+  };
+
   const res = await fetch(`${PRINTFUL_API}${endpoint}`, {
     ...init,
-    headers: {
-      Authorization: `Bearer ${getApiKey()}`,
-      'Content-Type': 'application/json',
-      ...(init?.headers || {}),
-    },
-    // Important: force server fetch
+    headers,
     cache: 'no-store',
   });
 
@@ -86,56 +91,249 @@ async function pfFetch<T>(endpoint: string, init?: RequestInit, attempt = 0): Pr
   }
 
   const json = await res.json();
-  // Printful wraps in { result, code } etc
+  // Printful wraps payloads in { result } — unwrap if present
   return (json?.result ?? json) as T;
 }
 
+// ---------------------------
+// Disk cache (two locations)
+// ---------------------------
+function cachePaths(): string[] {
+  const cwd = process.cwd();
+  return [
+    path.join(cwd, 'data', 'printful-cache.json'),
+    path.join(cwd, '.next', 'cache', 'printful-cache.json'),
+  ];
+}
+
+async function readFirstExisting<T>(): Promise<T | null> {
+  for (const p of cachePaths()) {
+    try {
+      const txt = await fs.readFile(p, 'utf8');
+      return JSON.parse(txt) as T;
+    } catch {
+      // continue
+    }
+  }
+  return null;
+}
+
+async function writeEverywhere<T>(payload: T): Promise<void> {
+  await Promise.all(
+    cachePaths().map(async p => {
+      try {
+        await fs.mkdir(path.dirname(p), { recursive: true });
+        await fs.writeFile(p, JSON.stringify(payload, null, 2), 'utf8');
+      } catch {
+        // non-fatal
+      }
+    })
+  );
+}
+
+// -----------------------------------------------------------
+// Fetch catalog (STORE mode by default) with optional enrich
+// -----------------------------------------------------------
+type IdItem = { id: number };
+type Paging = { total?: number; offset?: number; limit?: number };
+type ProductListObj = { products: IdItem[]; paging?: Paging };
+
+function hasProductsObj(x: unknown): x is ProductListObj {
+  if (typeof x !== 'object' || x === null) return false;
+  const maybe = x as Record<string, unknown>;
+  return Array.isArray(maybe.products);
+}
+function isIdItemArray(x: unknown): x is IdItem[] {
+  return Array.isArray(x) && x.every(it => typeof (it as IdItem).id === 'number');
+}
+function extractItems(list: unknown): IdItem[] {
+  if (isIdItemArray(list)) return list;
+  if (hasProductsObj(list)) return list.products;
+  return [];
+}
+function extractPaging(list: unknown): Paging | undefined {
+  if (!hasProductsObj(list)) return undefined;
+  return list.paging;
+}
+
+type StoreVariantBase = {
+  id: number;
+  name: string;
+  sku?: string;
+  retail_price?: string;
+  currency?: string;
+  color?: string;
+  size?: string;
+  image?: string;
+};
+type StoreVariantWithCatalog = StoreVariantBase & { _catalogVariantId: number };
+
 export async function fetchCatalog(): Promise<PrintfulProduct[]> {
-  // Strategy: Printful has a "products" list and per-product "variants"
-  // We'll fetch the list, then map/fetch details with backoff, then flatten.
-  const storeId = process.env.PRINTFUL_STORE_ID?.trim();
-  const listEndpoint = storeId ? `/stores/${storeId}/products` : '/store/products';
+  const storeId = (process.env.PRINTFUL_STORE_ID || '').trim();
+  const listBase = storeId ? '/store/products' : '/products';
 
-  const list = await pfFetch<PrintfulCatalog>(listEndpoint);
-
-  // Limit breadth if needed; for M3 pull all (respect rate limits with modest concurrency)
-  const concurrency = 4;
-  const chunks: number[][] = [];
-  for (let i = 0; i < list.products.length; i += concurrency) {
-    chunks.push(list.products.slice(i, i + concurrency).map(p => p.id));
+  // list all ids (cap to something reasonable if needed in future)
+  const limit = 100;
+  let offset = 0;
+  const ids: number[] = [];
+  for (;;) {
+    const q = `${listBase}?limit=${limit}&offset=${offset}`;
+    const page = await pfFetch<unknown>(q);
+    const items = extractItems(page);
+    ids.push(...items.map(p => p.id));
+    const paging = extractPaging(page);
+    const total = paging?.total;
+    offset += limit;
+    if (!items.length) break;
+    if (typeof total === 'number' && ids.length >= total) break;
   }
 
   const out: PrintfulProduct[] = [];
-  for (const ids of chunks) {
+  const concurrency = 6;
+
+  // Catalog mode: details already look like PrintfulProduct
+  if (!storeId) {
+    for (let i = 0; i < ids.length; i += concurrency) {
+      const chunk = ids.slice(i, i + concurrency);
+      const results = await Promise.allSettled(
+        chunk.map(id => pfFetch<PrintfulProduct>(`${listBase}/${id}`))
+      );
+      for (const r of results) if (r.status === 'fulfilled') out.push(r.value);
+    }
+    return out;
+  }
+
+  // Store mode: normalize { sync_product, sync_variants } → PrintfulProduct-like
+  for (let i = 0; i < ids.length; i += concurrency) {
+    const chunk = ids.slice(i, i + concurrency);
     const results = await Promise.allSettled(
-      ids.map(async (id) => {
-        const p = await pfFetch<PrintfulProduct>(`${listEndpoint}/${id}`);
-        return p;
-      })
+      chunk.map(id =>
+        pfFetch<{
+          sync_product: { id: number; name: string; thumbnail_url?: string };
+          sync_variants: Array<{
+            id: number;
+            variant_id: number;
+            name: string;
+            retail_price?: string;
+            currency?: string;
+            files?: Array<{ preview_url?: string; url?: string }>;
+          }>;
+        }>(`${listBase}/${id}`)
+      )
     );
+
     for (const r of results) {
-      if (r.status === 'fulfilled') out.push(r.value);
+      if (r.status !== 'fulfilled') continue;
+      const d = r.value;
+
+      const raw = Array.isArray(d.sync_variants) ? d.sync_variants : [];
+      const baseVariants: StoreVariantWithCatalog[] = raw.map(sv => {
+        const f0 = Array.isArray(sv.files) && sv.files.length ? sv.files[0] : undefined;
+        const image = f0?.preview_url || f0?.url;
+        return {
+          id: sv.id,
+          name: sv.name,
+          sku: undefined,
+          retail_price: sv.retail_price,
+          currency: sv.currency,
+          color: undefined,
+          size: undefined,
+          image,
+          _catalogVariantId: sv.variant_id,
+        };
+      });
+
+      // Start with stripped variants (no _catalogVariantId)
+      let enriched: StoreVariantBase[] = baseVariants.map((v) => ({
+  id: v.id,
+  name: v.name,
+  sku: v.sku,
+  retail_price: v.retail_price,
+  currency: v.currency,
+  color: v.color,
+  size: v.size,
+  image: v.image,
+}));
+      // Optional enrichment using global catalog /products/variant/{id}
+      if (isTrue(process.env.PRINTFUL_ENRICH_VARIANTS)) {
+        const max = Math.max(1, Math.min(Number(process.env.PRINTFUL_ENRICH_MAX || '200'), 1000));
+        const targets = baseVariants
+          .filter(v => Number.isFinite(v._catalogVariantId))
+          .slice(0, max);
+
+        const enrichMap = new Map<number, { color?: string; size?: string; image?: string }>();
+        const enrichConcurrency = 10;
+
+        for (let j = 0; j < targets.length; j += enrichConcurrency) {
+          const slice = targets.slice(j, j + enrichConcurrency);
+          const results2 = await Promise.allSettled(
+            slice.map(v => pfFetch<{
+              variant?: { id?: number; name?: string; size?: string; color?: string; image?: string };
+              product?: { size?: string; color?: string; image?: string };
+              files?: Array<{ url?: string }>;
+            }>(`/products/variant/${v._catalogVariantId}`))
+          );
+          results2.forEach((rr, idx) => {
+            if (rr.status !== 'fulfilled') return;
+            const payload = rr.value;
+            const vdetail = payload.variant ?? payload.product ?? {};
+            const files = Array.isArray(payload.files) ? payload.files : [];
+            const primaryImage = vdetail.image || (files.length ? files[0]?.url : undefined);
+            const entry = {
+              color: typeof vdetail.color === 'string' ? vdetail.color : undefined,
+              size: typeof vdetail.size === 'string' ? vdetail.size : undefined,
+              image: typeof primaryImage === 'string' ? primaryImage : undefined,
+            };
+            const idKey = targets[idx]._catalogVariantId;
+            enrichMap.set(idKey, entry);
+          });
+        }
+
+ enriched = baseVariants.map((v) => {
+  const add = enrichMap.get(v._catalogVariantId);
+  return {
+    id: v.id,
+    name: v.name,
+    sku: v.sku,
+    retail_price: v.retail_price,
+    currency: v.currency,
+    color: add?.color ?? v.color,
+    size: add?.size ?? v.size,
+    image: add?.image ?? v.image,
+  };
+});
+      }
+
+      out.push({
+        id: d.sync_product.id,
+        name: d.sync_product.name,
+        variants: enriched,
+        files: [], // images live on variants
+        thumbnail_url: d.sync_product.thumbnail_url,
+      });
     }
   }
+
   return out;
 }
 
-export type PrintfulCache = {
-  fetchedAt: string;               // ISO
-  ttl: number;                     // seconds
-  products: PrintfulProduct[];     // normalized source records (pre-map)
-};
-
-export async function getPrintfulCached(forceRefresh = false): Promise<PrintfulCache | null> {
+// ----------------------------------------------------
+// Public: get cached (or fetch+cache) Printful catalog
+// ----------------------------------------------------
+export async function getPrintfulCached(): Promise<PrintfulCache | null> {
   const ttl = Number(process.env.PRINTFUL_CACHE_TTL || '86400');
   const now = Date.now();
-  const cached = await readCache<PrintfulCache>();
 
-  if (!forceRefresh && cached) {
-    const age = (now - Date.parse(cached.fetchedAt)) / 1000;
-    if (age < cached.ttl) return cached;
+  // 1) try disk cache
+  const cached = await readFirstExisting<PrintfulCache>();
+  if (cached) {
+    const age = now - Date.parse(cached.fetchedAt);
+    if (Number.isFinite(age) && age < ttl * 1000 && Array.isArray(cached.products) && cached.products.length) {
+      return cached;
+    }
   }
 
+  // 2) fetch live (build/revalidate) — never throw; fall back to stale/empty
   try {
     const products = await fetchCatalog();
     const payload: PrintfulCache = {
@@ -143,11 +341,11 @@ export async function getPrintfulCached(forceRefresh = false): Promise<PrintfulC
       ttl,
       products,
     };
-    await writeCache(payload);
+    await writeEverywhere(payload);
     return payload;
   } catch {
-    // Fall back to stale cache if present
+    // Fall back to whatever we had
     if (cached) return cached;
-    return null;
+    return { fetchedAt: new Date(0).toISOString(), ttl, products: [] };
   }
 }
