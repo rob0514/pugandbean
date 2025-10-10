@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 type Order = {
   token?: string;
@@ -12,46 +12,36 @@ type Order = {
 };
 
 export default function SuccessPage() {
-  const [order, setOrder] = useState<Order | null>(null);
-
-  useEffect(() => {
+  // Read last order once on first client render; no effects needed.
+  const [order] = useState<Order | null>(() => {
+    if (typeof window === "undefined") return null;
     try {
       const raw = sessionStorage.getItem("snipcart:lastOrder");
-      if (raw) setOrder(JSON.parse(raw));
-    } catch {}
-  }, []);
+      return raw ? (JSON.parse(raw) as Order) : null;
+    } catch {
+      return null;
+    }
+  });
 
   return (
-    <main className="mx-auto max-w-2xl px-6 py-16">
-      <h1 className="mb-2 text-3xl font-semibold">Thank you!</h1>
-      <p className="mb-8 text-neutral-600">Your test order has been received.</p>
+    <main className="mx-auto max-w-3xl px-4 py-12">
+      <h1 className="text-3xl font-semibold tracking-tight">Order complete</h1>
+      <p className="mt-2 opacity-75">
+        Thanks! We’ve received your order. A confirmation email is on its way.
+      </p>
 
-      {!order ? (
-        <p className="text-sm text-neutral-500">
-          We couldn’t locate order details. If this was a test purchase, the event may not have fired yet.
-        </p>
-      ) : (
-        <section className="rounded-2xl border p-6">
-          <div className="mb-4 text-sm text-neutral-600">
-            <div>Order: <span className="font-medium">{order.invoiceNumber ?? order.token}</span></div>
-            {order.placedAt && <div>Placed: {new Date(order.placedAt).toLocaleString()}</div>}
-          </div>
-          <ul className="divide-y">
-            {order.items.map((i) => (
-              <li key={i.id} className="py-3 text-sm">
-                <div className="flex items-center justify-between">
-                  <span>{i.name} × {i.qty}</span>
-                  <span>${(i.qty * i.price).toFixed(2)}</span>
-                </div>
-              </li>
-            ))}
-          </ul>
-          <div className="mt-4 flex items-center justify-between border-t pt-4 font-medium">
-            <span>Total</span>
-            <span>${order.totals.grandTotal?.toFixed?.(2) ?? "0.00"}</span>
-          </div>
-        </section>
-      )}
+      <section className="mt-8 rounded-xl border p-6">
+        {order ? (
+          <pre className="text-sm overflow-auto">
+            {JSON.stringify(order, null, 2)}
+          </pre>
+        ) : (
+          <p className="text-sm opacity-75">
+            We couldn’t find your last order in this browser. If you just
+            checked out, try refreshing this page.
+          </p>
+        )}
+      </section>
     </main>
   );
 }

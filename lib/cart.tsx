@@ -11,8 +11,8 @@ isOpen: boolean
 open: () => void
 close: () => void
 items: CartItem[]
-add: (p: Product) => void
-remove: (index: number) => void
+add: (_p: Product) => void
+remove: (_index: number) => void
 total: number
 }
 

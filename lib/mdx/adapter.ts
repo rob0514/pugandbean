@@ -4,7 +4,7 @@ import matter from "gray-matter";
 import { globby } from "globby";
 import type { Post, PostFrontmatter, PostListItem } from "./types";
 import { computeReadingTime } from "./reading-time";
-import { slugifyFromFilename, isProd, canonical, ogFallbackFor } from "./utils";
+import { slugifyFromFilename, isProd, ogFallbackFor } from "./utils";
 
 const CONTENT_DIR = path.join(process.cwd(), "content", "blog");
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";

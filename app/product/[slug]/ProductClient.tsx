@@ -5,12 +5,18 @@ import { useMemo, useState } from 'react';
 import type { Product, ProductOption, Variant } from '@/types/product';
 
 export default function ClientProduct({ product }: { product: Product }) {
-  const [sel, setSel] = useState<Record<string, string>>(() => ({ ...(product.variants[0]?.options || {}) }));
+  // initialize selection from the first variant’s options
+  const [sel, setSel] = useState<Record<string, string>>(
+    () => ({ ...(product.variants[0]?.options || {}) })
+  );
 
+  // compute matching variant from current selection (stable and fast)
   const matching = useMemo(() => {
+    const entries = Object.entries(sel);
     return (
-      product.variants.find(v => Object.entries(sel).every(([k, val]) => !val || v.options[k] === val)) ||
-      product.variants[0]
+      product.variants.find(v =>
+        entries.every(([k, val]) => !val || v.options[k] === val)
+      ) || product.variants[0]
     );
   }, [sel, product.variants]);
 
@@ -38,12 +44,15 @@ export default function ClientProduct({ product }: { product: Product }) {
         {/* Details */}
         <div className="space-y-6">
           <h1 className="text-3xl font-semibold">{product.title}</h1>
-          <div className="text-2xl">{(product.currency ?? 'USD')} {price.toFixed(2)}</div>
+          <div className="text-2xl">
+            {(product.currency ?? 'USD')} {price.toFixed(2)}
+          </div>
 
           <VariantPicker
             options={product.options}
             variants={product.variants}
             sel={sel}
+            // both parameters are actively used here, so no underscore needed
             onChange={(optId, val) => setSel(s => ({ ...s, [optId]: val }))}
           />
 
@@ -58,16 +67,19 @@ export default function ClientProduct({ product }: { product: Product }) {
 
 function VariantPicker({
   options,
-  //variants,
+  // variants prop is defined in the signature to keep the public API stable,
+  // but not used in this implementation. Prefix with underscore to satisfy ESLint.
+  variants: _variants,
   sel,
   onChange,
 }: {
   options: ProductOption[];
-  variants: Variant[];
+  variants: Variant[]; // keep in the contract for future use
   sel: Record<string, string>;
-  onChange: (optId: string, value: string) => void;
+  onChange: (_optId: string, _value: string) => void;
 }) {
   if (!options?.length) return null;
+
   return (
     <div className="space-y-4">
       {options.map(opt => (
