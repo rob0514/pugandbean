@@ -1,10 +1,11 @@
-'use client'
+//'use client'
 import Link from 'next/link'
-import { useCart } from '@/lib/cart'
+import UserMenu from "@/components/auth/UserMenu";
+import CartButton from "@/components/CartButton.client";
+import { ROUTES } from "@/lib/routes";
 
 
 export function SiteHeader() {
-const { open } = useCart()
 return (
 <header className="sticky top-0 z-10 bg-cream/80 backdrop-blur supports-[backdrop-filter]:bg-cream/60 border-b border-ink/10">
 <div className="max-w-7xl mx-auto px-6 md:px-10 lg:px-16 h-16 flex items-center justify-between">
@@ -15,8 +16,10 @@ return (
 <Link href="/about">About</Link>
 <Link href="/contact">Contact</Link>
 <Link href="/dev/snipcart">Snipcart</Link>
+<Link href={ROUTES.orders}>Orders</Link>
+<UserMenu />
 </nav>
-<button aria-label="Open cart" onClick={open} className="rounded-xl px-3 py-2 bg-fawn font-ui text-sm">Cart</button>
+<CartButton />
 </div>
 </header>
 )

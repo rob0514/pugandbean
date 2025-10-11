@@ -6,9 +6,9 @@ import { SiteHeader } from '@/components/site-header'
 import { SiteFooter } from '@/components/site-footer'
 import { CartProvider } from '@/lib/cart'
 import { env } from '@/lib/env'
-//import SnipcartProvider from '@/components/payments/SnipcartProvider'
-//import SnipcartRootGuard from "@/components/payments/SnipcartRootGuard"
-//import SnipcartEventsMount from "@/components/payments/SnipcartEventsMount"
+import { ClerkProvider } from "@clerk/nextjs";
+
+
 
 const dmSerif = DM_Serif_Display({ subsets: ['latin'], weight: '400', variable: '--font-dm-serif' })
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
@@ -43,7 +43,25 @@ export const viewport: Viewport = {
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const useAuth = process.env.USE_AUTH !== "false";
+   // If auth is disabled, don’t include Clerk’s provider at all
+  if (!useAuth) {
     return (
+      <html lang="en">
+        <body>{children}</body>
+      </html>
+    );
+  }
+  const pk = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+  if (!pk) {
+    throw new Error("Missing NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY");
+  }
+    return (
+      <ClerkProvider
+      publishableKey={pk}
+      signInUrl={process.env.CLERK_SIGN_IN_URL || "/sign-in"}
+      signUpUrl={process.env.CLERK_SIGN_UP_URL || "/sign-up"}
+    >
         <html lang="en" className={`${dmSerif.variable} ${inter.variable} ${poppins.variable}`}>
             <head>
                   {env.useSnipcart && (
@@ -94,5 +112,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 </CartProvider>
             </body>
         </html>
+        </ClerkProvider>
     )
 }

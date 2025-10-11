@@ -43,3 +43,6 @@ next-env.d.ts
 # Printful build cache
 data/printful-cache.json
 .next/cache/printful-cache.json
+
+# clerk configuration (can include secrets)
+/.clerk/
