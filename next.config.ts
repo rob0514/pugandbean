@@ -3,12 +3,16 @@
 const csp = [
   "default-src 'self'",
   "style-src 'self' 'unsafe-inline' https://cdn.snipcart.com https://fonts.bunny.net",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.snipcart.com https://clerk-js.cloudflare.com https://*.clerk.com https://*.clerk.services https://*.clerk.accounts.dev",
-  "connect-src 'self' https://app.snipcart.com https://cdn.snipcart.com https://payment.snipcart.com https://clerk-telemetry.com https://*.clerk.com https://*.clerk.services https://api.clerk.com https://*.clerk.accounts.dev",
-  "img-src 'self' data: blob: https://cdn.snipcart.com https://picsum.photos https://fastly.picsum.photos https://img.clerk.com https://*.clerk.com https://*.clerk.accounts.dev",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://checkout.stripe.com https://cdn.snipcart.com https://clerk-js.cloudflare.com https://*.clerk.com https://*.clerk.services https://*.clerk.accounts.dev",
+  "connect-src 'self' https://api.stripe.com https://m.stripe.network https://checkout.stripe.com https://app.snipcart.com https://cdn.snipcart.com https://payment.snipcart.com https://clerk-telemetry.com https://*.clerk.com https://*.clerk.services https://api.clerk.com https://*.clerk.accounts.dev",
+  "img-src 'self' data: blob: https://*.stripe.com https://cdn.snipcart.com https://picsum.photos https://fastly.picsum.photos https://img.clerk.com https://*.clerk.com https://*.clerk.accounts.dev",
   "font-src 'self' https://cdn.snipcart.com https://fonts.bunny.net data:",
-  "frame-src 'self' https://payment.snipcart.com https://*.clerk.com https://*.clerk.accounts.dev",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self' https://checkout.stripe.com",
+  "frame-src 'self' https://js.stripe.com https://checkout.stripe.com https://hooks.stripe.com https://payment.snipcart.com https://*.clerk.com https://*.clerk.accounts.dev",
   "worker-src  'self' blob:",
+  "frame-ancestors 'self'",
 ].join("; ");
 
 const nextConfig = {

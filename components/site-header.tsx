@@ -1,7 +1,7 @@
 //'use client'
 import Link from 'next/link'
 import UserMenu from "@/components/auth/UserMenu";
-import CartButton from "@/components/CartButton.client";
+import CartButton from "@/components/cart/CartButton.client";
 import { ROUTES } from "@/lib/routes";
 
 
@@ -17,6 +17,7 @@ return (
 <Link href="/contact">Contact</Link>
 <Link href="/dev/snipcart">Snipcart</Link>
 <Link href={ROUTES.orders}>Orders</Link>
+<Link href="/cart">Cart</Link>
 <UserMenu />
 </nav>
 <CartButton />

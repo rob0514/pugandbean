@@ -4,9 +4,10 @@ import { DM_Serif_Display, Inter, Poppins } from 'next/font/google'
 import type { Metadata, Viewport } from 'next'
 import { SiteHeader } from '@/components/site-header'
 import { SiteFooter } from '@/components/site-footer'
-import { CartProvider } from '@/lib/cart'
+//import { CartProvider } from '@/lib/cart'
 import { env } from '@/lib/env'
 import { ClerkProvider } from "@clerk/nextjs";
+import  CartDrawer  from  '@/components/cart/CartDrawer';
 
 
 
@@ -79,7 +80,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           />
             </head>
             <body className="min-h-screen flex flex-col">
-                <CartProvider>
+              <CartDrawer />
                     <SiteHeader />
                     <main className="flex-1">
                         {children}
@@ -109,7 +110,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         )}
                     </main>
                     <SiteFooter />
-                </CartProvider>
             </body>
         </html>
         </ClerkProvider>

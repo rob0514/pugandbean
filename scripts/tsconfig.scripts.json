@@ -1,0 +1,22 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": "..",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ES2022",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "paths": {
+      "server-only": ["./_stubs/server-only.ts"],
+      "@/*": ["./*"]             // so "@/lib/..." works in scripts
+    },
+    "noEmit": true
+  },
+  "include": [
+    "../scripts/**/*.ts",
+    "../lib/**/*.ts",
+    "../types/**/*.ts"
+  ],
+  "exclude": ["../.next", "../node_modules"]
+}

@@ -1,10 +1,17 @@
 import { NextResponse } from 'next/server';
-
+import { z } from "zod";
 // Disable caching so you always see fresh results
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 const PRINTFUL_API = 'https://api.printful.com';
+
+const PrintfulEnvelope = z.object({
+  code: z.number(),
+  result: z.unknown(), // if you know the shape, replace with a typed schema
+});
+
+type PrintfulEnvelope = z.infer<typeof PrintfulEnvelope>;
 
 function requireKey() {
     const key = process.env.PRINTFUL_API_KEY;
@@ -46,9 +53,13 @@ async function pfFetch<T>(endpoint: string, storeId?: string, attempt = 0): Prom
         throw new Error(`${endpoint} ${res.status}: ${text}`);
     }
 
-    const json = await res.json();
+    /* const json = await res.json();
     // Printful responses are usually { code, result, paging? }
-    return (json?.result ?? json) as T;
+    return (json?.result ?? json) as T;*/
+    const dataUnknown: unknown = await res.json();
+    const data = PrintfulEnvelope.parse(dataUnknown);
+    // Printful responses are usually { code, result, paging? }
+    return (data?.result ?? data) as T;
 }
 
 //type ListResult = { products: Array<{ id: number }>; paging?: { total: number; offset: number; limit: number } };

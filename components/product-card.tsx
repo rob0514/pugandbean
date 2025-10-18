@@ -11,7 +11,7 @@ return (
 <Image src={cover} alt={product.title} fill className="object-cover" />
 </div>
 <div className="p-4">
-<div className="text-sm text-ink/60 font-ui">${(product.price/100).toFixed(2)}</div>
+<div className="text-sm text-ink/60 font-ui">${(product.price).toFixed(2)}</div>
 <h3 className="mt-1 font-medium">{product.title}</h3>
 </div>
 </Link>

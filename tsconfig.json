@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -13,19 +17,54 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
+    //"exactOptionalPropertyTypes": true,
+    //"noUncheckedIndexedAccess": true,
     "plugins": [
       {
         "name": "next"
       }
     ],
     "paths": {
-      "@/*": ["./*"],
-      "@/app/*": ["./app/*"],
-      "@/components/*": ["./components/*"],
-      "@/lib/*": ["./lib/*"],
-      "@/types/*": ["./types/*"]
+      "@/*": [
+        "./*"
+      ],
+      "@/app/*": [
+        "./app/*"
+      ],
+      "@/components/*": [
+        "./components/*"
+      ],
+      "@/lib/*": [
+        "./lib/*"
+      ],
+        "@/store/*": [
+        "./store/*"
+      ],
+      "@/types/*": [
+        "./types/*"
+      ]
     }
   },
-  "include": ["app", "components", "lib", "types", "next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "scripts/printful-prewarm.mjs"],
-  "exclude": ["node_modules"]
+  "include": [
+    "app/**/*.ts",
+    "app/**/*.tsx",
+    "store/**/*.ts",
+    "store/**/*.tsx",
+    "components/**/*.ts",
+    "components/**/*.tsx",
+    "globals.d.ts",
+    "lib/**/*.ts",
+    "lib/**/*.tsx",
+    "next-env.d.ts",
+    "types/**/*.d.ts",
+    "types/**/*.ts", // <-- add
+    "types/**/*.tsx", // <-- if you have one
+    ".next/types/**/*.ts",
+  ],
+  "exclude": [
+    "node_modules",
+    ".next",
+    "dist",
+    "scripts"
+  ]
 }

@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "stripe:sync": "tsx --tsconfig scripts/tsconfig.scripts.json scripts/stripe-sync.ts",
     "new:post": "node scripts/new-post.mjs",
     "prebuild": "node scripts/printful-prewarm.mjs",
     "dev": "next dev",
@@ -32,23 +33,31 @@
     "rehype-pretty-code": "0.14.1",
     "rehype-slug": "6.0.0",
     "remark-gfm": "4.0.1",
-    "shadcn": "^3.3.1"
+    "shadcn": "^3.3.1",
+    "stripe": "19.1.0",
+    "stripe-event-types": "3.1.0",
+    "zod": "3.25.76",
+    "zustand": "5.0.8"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@eslint/js": "^9.37.0",
     "@next/eslint-plugin-next": "^15.5.4",
-    "@types/node": "^20",
+    "@types/node": "20.19.21",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@typescript-eslint/eslint-plugin": "8.46.0",
+    "@typescript-eslint/parser": "8.46.0",
     "autoprefixer": "^10.4.21",
-    "eslint": "^9.37.0",
+    "dotenv": "^17.2.3",
+    "eslint": "9.37.0",
     "eslint-config-next": "15.5.4",
     "eslint-plugin-react-hooks": "^7.0.0",
     "globals": "^16.4.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.14",
-    "typescript": "^5",
+    "tsx": "4.20.6",
+    "typescript": "5.9.3",
     "typescript-eslint": "^8.46.0"
   }
 }

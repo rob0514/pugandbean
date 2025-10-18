@@ -2,7 +2,14 @@
 import 'server-only';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { z } from "zod";
 
+const PrintfulEnvelope = z.object({
+  code: z.number(),
+  result: z.unknown(), // if you know the shape, replace with a typed schema
+});
+
+type PrintfulEnvelope = z.infer<typeof PrintfulEnvelope>;
 // -----------------------------
 // Public types (used by map.ts)
 // -----------------------------
@@ -90,9 +97,12 @@ async function pfFetch<T>(endpoint: string, init: RequestInit = {}, attempt = 0)
     throw new Error(`Printful ${endpoint} ${res.status}: ${text}`);
   }
 
-  const json = await res.json();
+  /*const json = await res.json();
   // Printful wraps payloads in { result } — unwrap if present
-  return (json?.result ?? json) as T;
+  return (json?.result ?? json) as T;*/
+  const jsonUnknown: unknown = await res.json();
+  const json = PrintfulEnvelope.parse(jsonUnknown);
+  return (json?.result ?? json) as T; // unknown until you parse a concrete schema
 }
 
 // ---------------------------

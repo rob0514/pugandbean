@@ -1,0 +1,20 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "app/**/*.ts",
+    "app/**/*.tsx",
+    "store/**/*.ts",
+    "store/**/*.tsx",
+    "components/**/*.ts",
+    "components/**/*.tsx",
+    "globals.d.ts",
+    "lib/**/*.ts",
+    "lib/**/*.tsx",
+    "next-env.d.ts",
+    "types/**/*.d.ts",
+    "types/**/*.ts", // <-- add
+    "types/**/*.tsx", // <-- if you have one
+    ".next/types/**/*.ts",
+  ],
+  "exclude": ["node_modules", ".next", "dist","scripts"]
+}
