@@ -11,8 +11,13 @@ const SuccessDataSchema = z.object({
   lineItems: z.array(z.object({
     name: z.string(),
     qty: z.number(),
-    unitAmount: z.number()
+    unitAmount: z.number(),
+    canonicalKey: z.string().nullable().optional(),
   })),
+  shipping: z.object({
+    label: z.string(),
+    amount: z.number(),
+  }).optional(),
 });
 type SuccessData = z.infer<typeof SuccessDataSchema>;
 
@@ -59,14 +64,27 @@ export default function SuccessOrderSummary({ sessionId }: { sessionId: string }
 
       <h2 className="text-xl font-medium">Thanks! Your order is confirmed.</h2>
       <ul className="divide-y">
-        {lineItems.map((li, i) => (
-          <li key={i} className="py-3 flex justify-between">
-            <span className="text-sm">{li.name} × {li.qty}</span>
-            <span className="text-sm">{currency} {(li.unitAmount * li.qty).toFixed(2)}</span>
-          </li>
-        ))}
-      </ul>
-      <div className="pt-2 flex justify-between font-medium">
+  {lineItems.map((li, i) => (
+    <li key={i} className="py-3 flex justify-between">
+      <span className="text-sm">
+        {li.name} × {li.qty}
+      </span>
+      <span className="text-sm">
+        {currency} {(li.unitAmount * li.qty).toFixed(2)}
+      </span>
+    </li>
+  ))}
+</ul>
+{data.shipping && data.shipping.amount > 0 ? (
+  <div className="pt-2 flex justify-between text-sm">
+    <span>{data.shipping.label}</span>
+    <span>
+      {currency} {data.shipping.amount.toFixed(2)}
+    </span>
+  </div>
+) : null}
+
+      <div className="pt-3 flex justify-between font-medium text-lg">
         <span>Total</span>
         <span>{currency} {amountTotal.toFixed(2)}</span>
       </div>

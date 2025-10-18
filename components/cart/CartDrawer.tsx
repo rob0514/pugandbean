@@ -2,7 +2,7 @@
 import { useCart } from "@/store/cart";
 import { useCartUI } from "@/store/cart-ui";
 import { lookupUiCents } from "@/lib/pricing/uiPriceMap";
-import CheckoutButton from "./CheckoutButton";
+import CheckoutButton from './CheckoutButton';
 
 function formatUSD(cents: number) {
   return (cents / 100).toFixed(2);
@@ -13,8 +13,6 @@ export default function CartDrawer() {
   const { open, closeCart } = useCartUI();
 
   const itemCount = items.reduce((n, it) => n + it.qty, 0);
-
-  // Optional subtotal (skips items without a UI price)
   const subtotalCents = items.reduce((sum, it) => {
     const cents = lookupUiCents(it.productId, it.variantId);
     return cents ? sum + cents * it.qty : sum;
@@ -22,12 +20,10 @@ export default function CartDrawer() {
 
   return (
     <div aria-hidden={!open} className={`fixed inset-0 z-50 ${open ? "" : "pointer-events-none"}`}>
-      {/* backdrop */}
       <div
         className={`absolute inset-0 bg-black/30 transition-opacity ${open ? "opacity-100" : "opacity-0"}`}
         onClick={closeCart}
       />
-      {/* panel */}
       <aside
         className={`absolute right-0 top-0 h-full w-[92vw] max-w-md bg-white text-black shadow-xl transition-transform ${
           open ? "translate-x-0" : "translate-x-full"
@@ -37,9 +33,7 @@ export default function CartDrawer() {
       >
         <div className="flex items-center justify-between p-4 border-b">
           <h2 className="text-lg font-medium">Your Cart</h2>
-          <button onClick={closeCart} aria-label="Close" className="text-sm underline">
-            Close
-          </button>
+          <button onClick={closeCart} aria-label="Close" className="text-sm underline">Close</button>
         </div>
 
         <div className="p-4 space-y-4 overflow-y-auto h-[calc(100%-15rem)]">
@@ -84,7 +78,6 @@ export default function CartDrawer() {
           )}
         </div>
 
-        {/* footer */}
         <div className="p-4 border-t">
           <div className="flex justify-between text-sm mb-2">
             <span>Items</span>
@@ -96,9 +89,7 @@ export default function CartDrawer() {
               <span>USD {formatUSD(subtotalCents)}</span>
             </div>
           ) : (
-            <div className="text-xs text-neutral-500">
-              Prices shown at checkout.
-            </div>
+            <div className="text-xs text-neutral-500 pb-3">Prices shown at checkout.</div>
           )}
           <CheckoutButton />
         </div>
@@ -106,3 +97,6 @@ export default function CartDrawer() {
     </div>
   );
 }
+
+
+ {/* <CheckoutButton /> */}

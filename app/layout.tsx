@@ -80,7 +80,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           />
             </head>
             <body className="min-h-screen flex flex-col">
-              <CartDrawer />
+             <CartDrawer />
                     <SiteHeader />
                     <main className="flex-1">
                         {children}
