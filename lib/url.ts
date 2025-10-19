@@ -1,49 +1,66 @@
 // lib/url.ts
-function publicOrigin(): string {
-  return (
+
+function normalizePublicOrigin(): URL {
+  const raw =
     process.env.NEXT_PUBLIC_APP_URL ||
     process.env.APP_URL ||
-    "http://localhost:3000"
-  );
+    "http://localhost:3000";
+
+  const u = new URL(raw);
+
+  const isLocal =
+    u.hostname === "localhost" || u.hostname === "127.0.0.1";
+
+  // In production domains, strip any port if someone set one by mistake
+  if (!isLocal) u.port = "";
+
+  // Also normalize trailing slash (URL keeps it consistent in .toString())
+  return u;
 }
 
-function isAbsolute(u: string) {
-  return /^https?:\/\//i.test(u);
+function isAbsolute(input: string) {
+  return /^https?:\/\//i.test(input);
 }
 
-/** Absolute URL safe for current env; never appends :3000 to your public domain. */
+/** Returns a safe absolute URL for the current env.
+ *  - Leaves remote absolutes untouched
+ *  - Swaps localhost→public origin
+ *  - Strips any port for public domains (no :3000 on Vercel)
+ *  - Resolves relatives against the public origin
+ */
 export function toPublicUrl(input?: string | null): string | undefined {
   if (!input) return undefined;
 
-  const base = publicOrigin();
+  const base = normalizePublicOrigin();
 
-  try {
-    // Build a URL relative to base if needed
-    const u = isAbsolute(input) ? new URL(input) : new URL(input, base);
-    const pub = new URL(base);
+  // Absolute?
+  if (isAbsolute(input)) {
+    const u = new URL(input);
 
-    const isLocal = u.hostname === "localhost" || u.hostname === "127.0.0.1";
+    const isLocal =
+      u.hostname === "localhost" || u.hostname === "127.0.0.1";
 
     if (isLocal) {
-      // swap localhost → public
-      u.protocol = pub.protocol;
-      u.host = pub.host; // hostname + (prod never includes :3000)
+      // localhost → public origin (port already stripped on base)
+      u.protocol = base.protocol;
+      u.hostname = base.hostname;
+      u.port = base.port; // will be "" for prod
       return u.toString();
     }
 
-    // If the host is already your public host, strip any stray dev port
-    if (u.hostname === pub.hostname && u.port) {
-      u.port = "";
+    // Same host as public? ensure no port
+    if (u.hostname === base.hostname && u.port) {
+      u.port = ""; // strip :3000 (or any port)
       return u.toString();
     }
 
-    // Otherwise leave remote URLs untouched
+    // Different remote host → leave as-is
     return u.toString();
-  } catch {
-    // last-ditch: concat
-    return input.startsWith("/") ? `${base}${input}` : `${base}/${input}`;
   }
+
+  // Relative → resolve against sanitized public origin
+  return new URL(input, base).toString();
 }
 
-// For scripts writing to Stripe metadata:
+// For scripts writing to Stripe metadata, reuse the same logic
 export const canonicalizeForStripe = toPublicUrl;
