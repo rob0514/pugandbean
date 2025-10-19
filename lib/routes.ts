@@ -4,7 +4,7 @@ export const ROUTES = {
   home: "/" as const,
   blog: "/blog" as const,
   shop: "/shop" as const,
-  orders: "/orders" as const,
+  orders: "/account/orders" as const,
   account: "/account" as const,
   contact: "/contact" as const,
   about: "/about" as const,

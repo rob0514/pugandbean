@@ -40,7 +40,12 @@ async function findOrCreatePrice(args: {
     currency: currency.toLowerCase(),
     unit_amount: amount,
     nickname: variantId,
-    metadata: { canonical_key: productKey },
+    metadata: {
+     canonical_key: productKey,
+     productId: productKey,
+     variantId: variantId,   // if applicable
+     //image: imageUrl,                 // absolute or site-relative
+}
   });
 }
 
