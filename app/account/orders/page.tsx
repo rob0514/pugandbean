@@ -2,6 +2,7 @@
 import Image from "next/image";
 import { currentUser } from "@clerk/nextjs/server";
 import { getOrdersForEmail } from "@/lib/orders/server";
+import { toPublicUrl } from "@/lib/url";
 
 export const dynamic = "force-dynamic";
 
@@ -84,7 +85,7 @@ export default async function OrdersPage() {
                         <div className="h-14 w-14 flex-none overflow-hidden rounded-md border bg-background">
                           {hasImage ? (
                             <Image
-                              src={it.image as string}
+                              src={toPublicUrl(it.image) ?? "/placeholder.png"}
                               alt={it.title}
                               width={56}
                               height={56}
