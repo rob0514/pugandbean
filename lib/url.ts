@@ -8,33 +8,46 @@ function publicOrigin() {
   );
 }
 
+function isAbsolute(u: string): boolean {
+  return /^https?:\/\//i.test(u);
+}
+
 /** Returns an absolute URL safe for the current env. */
 export function toPublicUrl(input?: string | null): string | undefined {
   if (!input) return undefined;
 
   const base = publicOrigin();
-
-  try {
-    // If input is relative, URL() resolves it against base.
-    const u = new URL(input, base);
-
-    // If the URL points at localhost in prod, swap to public origin.
-    const isLocalHost =
-      u.hostname === "localhost" || u.hostname === "127.0.0.1";
-
-    if (isLocalHost) {
+if (isAbsolute(input)) {
+    try {
+      const u = new URL(input);
+      const isLocal = u.hostname === "localhost" || u.hostname === "127.0.0.1";
+      if (!isLocal) {
+        // ensure no dev port sneaks onto public host
+        const pub = new URL(base);
+        const isSameHost = u.hostname === pub.hostname;
+        if (isSameHost && u.port) {
+          u.port = ""; // strip any port from public domain
+          return u.toString();
+        }
+        return u.toString(); // leave other absolute URLs alone
+      }
+      // absolute but local → swap to public
       const pub = new URL(base);
       u.protocol = pub.protocol;
-      u.host = pub.host; // hostname + port (if any)
+      u.host = pub.host; // hostname:port
+      return u.toString();
+    } catch {
+      // fall through to relative handling
     }
-    return u.toString();
+  }
+
+  // Relative → resolve against public origin
+  try {
+    return new URL(input, base).toString();
   } catch {
-    // If URL() threw (rare), best-effort concat for leading slash
     return input.startsWith("/") ? `${base}${input}` : `${base}/${input}`;
   }
 }
 
-/** For writing to Stripe metadata: ensure absolute, swap localhost→public on prod */
-export function canonicalizeForStripe(input?: string | null): string | undefined {
-  return toPublicUrl(input ?? undefined);
-}
+/** For writing to Stripe metadata in scripts */
+export const canonicalizeForStripe = toPublicUrl;

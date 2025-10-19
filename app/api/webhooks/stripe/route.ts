@@ -93,6 +93,7 @@ export async function POST(req: NextRequest) {
           image,
         };
       });
+const createdIso = fullSession.created ? new Date(fullSession.created * 1000).toISOString() : new Date().toISOString();
 
       const order: Order = {
         id: fullSession.id,
@@ -102,7 +103,7 @@ export async function POST(req: NextRequest) {
         currency: upperCurrency(fullSession.currency),
         items,
         customerEmail: fullSession.customer_details?.email ?? null,
-        createdAt: new Date().toISOString(),
+        createdAt: createdIso,
       };
 
       await store.upsert(order);
